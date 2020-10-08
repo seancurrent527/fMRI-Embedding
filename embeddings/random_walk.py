@@ -1,6 +1,7 @@
 import numpy as np
 import sys, os
 sys.path.insert(0, '.')
+
 import data_processing
 
 def sample(adjacency, i):
