@@ -6,7 +6,7 @@ import data_processing
 from embeddings.random_walk import random_walk
 
 class Word2Vec:
-    # This is a CBOW version
+    # This is a skip-gram version
     def __init__(self, vocab_size, embedding_dim, kernel_width, learning_rate):
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
@@ -15,12 +15,12 @@ class Word2Vec:
         self.encoder = np.random.uniform(size = (self.vocab_size, self.embedding_dim))
         self.decoder = np.random.uniform(size = (self.embedding_dim, self.vocab_size))
 
-    def encode(self, seq):
-        embedding = seq @ self.encoder
+    def encode(self, word):
+        embedding = word @ self.encoder
         return embedding
 
-    def decode(self, seq):
-        output = seq @ self.decoder
+    def decode(self, embedding):
+        output = embedding @ self.decoder
         return output
 
     def softmax(self, output):
@@ -33,15 +33,15 @@ class Word2Vec:
         probabilities = self.softmax(output)
         return probabilities, embedding, output
 
-    def error(self, probabilities, word):
-        return probabilities - word
+    def error(self, probabilities, context):
+        return (probabilities - context).sum(axis = 0)
 
-    def loss(self, output, word):
-        return (-output[word == 1] + np.log(np.sum(np.exp(output))))[0]
+    def loss(self, output, context):
+        return (-output[context.argmax(axis = 1)].sum() + len(context) * np.log(np.sum(np.exp(output))))
 
-    def backprop(self, err, embedding, seq):
+    def backprop(self, err, embedding, word):
         grad_decoder = np.outer(embedding, err)
-        grad_encoder = np.outer(seq, (self.decoder @ err))
+        grad_encoder = np.outer(word, (self.decoder @ err))
 
         self.encoder -= self.learning_rate * grad_encoder
         self.decoder -= self.learning_rate * grad_decoder
@@ -49,14 +49,13 @@ class Word2Vec:
     def train(self, X, y, epochs = 50):
         for i in range(epochs):
             los = 0
-            for seq, word in zip(X, y):
-                seq = seq.mean(axis = 0)
-                probabilities, embedding, output = self.forward(seq)
-                err = self.error(probabilities, word)
+            for word, context in zip(X, y):
+                probabilities, embedding, output = self.forward(word)
+                err = self.error(probabilities, context)
 
-                self.backprop(err, embedding, seq)
+                self.backprop(err, embedding, word)
 
-                los += self.loss(output, word)
+                los += self.loss(output, context)
             
             print(f'Epoch {i + 1}: loss = {los}')
 
@@ -67,8 +66,8 @@ class Word2Vec:
         for i in ordering:
             word = seq[i]
             context = np.concatenate([seq[i - self.kernel_width: i], seq[i + 1: i + 1 + self.kernel_width]])
-            X.append(context)
-            y.append(word)
+            X.append(word)
+            y.append(context)
 
         self.train(X, y, epochs = epochs)
 
