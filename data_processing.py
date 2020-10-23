@@ -1,9 +1,9 @@
 from scipy.io import loadmat
 import numpy as np
 
-def read_data(Xfile, yfile):
-    X = loadmat(Xfile)['r']
-    y = loadmat(yfile)['t']
+def read_data(Xfile, yfile, target_variable = 'age'):
+    X = loadmat(Xfile)['full_conmat'].transpose((2, 0, 1))
+    y = loadmat(yfile)[target_variable]
     return X.T, y
 
 def adjacency_matrix(X):
@@ -18,8 +18,8 @@ def adjacency_matrix(X):
 
 #============================================
 def main():
-    X, y = read_data('fake_data_unique.mat', 'fake_targetvariable.mat')
-    X = adjacency_matrix(X)
+    X, y = read_data('maps_conmat.mat', 'maps_age.mat')
+    #X = adjacency_matrix(X)
 
     print(X)
 

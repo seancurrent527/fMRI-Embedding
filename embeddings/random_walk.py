@@ -22,8 +22,8 @@ def random_walk(adjacency, steps = 1000):
 
 #========================================
 def main():
-    X, y = data_processing.read_data('fake_data_unique.mat', 'fake_targetvariable.mat')
-    X = data_processing.adjacency_matrix(X)
+    X, y = data_processing.read_data('maps_conmat.mat', 'maps_age.mat')
+    #X = data_processing.adjacency_matrix(X)
 
     print(random_walk(X[0], steps = 1000))
 

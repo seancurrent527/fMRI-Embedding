@@ -7,7 +7,6 @@ import data_processing
 from embeddings.random_walk import random_walk
 
 class Word2Vec:
-    # This is a skip-gram version
     def __init__(self, vocab_size, embedding_dim, kernel_width, learning_rate):
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
@@ -126,19 +125,18 @@ class CBOW(Word2Vec):
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v')
+    parser.add_argument('-v', '--version', type=int)
     args = parser.parse_args()
-    version = int(args.v)
 
-    X, y = data_processing.read_data('fake_data_unique.mat', 'fake_targetvariable.mat')
-    X = data_processing.adjacency_matrix(X)
+    X, y = data_processing.read_data('maps_conmat.mat', 'maps_age.mat')
+    #X = data_processing.adjacency_matrix(X)
 
     walk = random_walk(X[0], steps = 1000)
     one_hot = np.zeros((len(walk), 268))
     for i, pos in enumerate(walk):
         one_hot[i, pos] = 1
 
-    if version == 0:
+    if args.version == 0:
         print("Skip-Gram")
         model = Skip_Gram(268, 64, 2, 0.1)
     else:
