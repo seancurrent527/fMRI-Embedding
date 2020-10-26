@@ -32,6 +32,9 @@ class AutoEncoder:
         model.fit(X, X, epochs = epochs, batch_size = 32)
 
     def encode(self, data):
+        if len(data.shape) == 2:
+            data = data[np.newaxis, ...]
+            return self.encoder.predict(data)[0]
         return self.encoder.predict(data)
 
     def decode(self, data):

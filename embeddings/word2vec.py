@@ -76,6 +76,18 @@ class Skip_Gram(Word2Vec):
 
         self.train(X, y, epochs=epochs)
 
+    def train_from_feature_seq(self, seq, epochs=50):
+        # seq should be a sequence of feature vectors
+        ordering = np.random.permutation(len(seq) - (2 * self.kernel_width)) + self.kernel_width
+        X, y = [], []
+        for i in ordering:
+            word = seq[i]
+            context = (np.concatenate([seq[i - self.kernel_width: i], seq[i + 1: i + 1 + self.kernel_width]]) == 0).astype(int)
+            X.append(word)
+            y.append(context)
+
+        self.train(X, y, epochs=epochs)
+
 class CBOW(Word2Vec):
     # This is a contiuous-bag-of-words version
     def __init__(self, vocab_size, embedding_dim, kernel_width, learning_rate):
@@ -115,6 +127,18 @@ class CBOW(Word2Vec):
         X, y = [], []
         for i in ordering:
             word = seq[i]
+            context = np.concatenate([seq[i - self.kernel_width: i], seq[i + 1: i + 1 + self.kernel_width]])
+            X.append(context)
+            y.append(word)
+
+        self.train(X, y, epochs=epochs)
+
+    def train_from_feature_seq(self, seq, epochs=50):
+        # seq should be a sequence of feature vectors
+        ordering = np.random.permutation(len(seq) - (2 * self.kernel_width)) + self.kernel_width
+        X, y = [], []
+        for i in ordering:
+            word = (seq[i] == 0).astype(int)
             context = np.concatenate([seq[i - self.kernel_width: i], seq[i + 1: i + 1 + self.kernel_width]])
             X.append(context)
             y.append(word)

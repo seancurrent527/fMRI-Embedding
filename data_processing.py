@@ -4,7 +4,7 @@ import numpy as np
 def read_data(Xfile, yfile, target_variable = 'age'):
     X = loadmat(Xfile)['full_conmat'].transpose((2, 0, 1))
     y = loadmat(yfile)[target_variable]
-    return X.T, y
+    return X, y
 
 def adjacency_matrix(X):
     adjacent_X = np.ones((len(X), 268, 268))
