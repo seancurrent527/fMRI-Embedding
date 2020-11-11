@@ -5,7 +5,7 @@ import argparse
 sys.path.insert(0, '.')
 
 import data_processing
-from embeddings.neural_encoder import AutoEncoder
+#from embeddings.neural_encoder import AutoEncoder
 from embeddings.word2vec import CBOW, Skip_Gram
 from embeddings.random_walk import random_walk
 
