@@ -5,7 +5,7 @@ import tensorflow as tf
 sys.path.insert(0, '.')
 
 import data_processing
-from utils.compare_embeddings import generate_embedding_vis
+from utils.plot_embeddings import generate_embedding_vis
 
 class AutoEncoder:
     def __init__(self, encoder, decoder):
@@ -143,15 +143,13 @@ class Transformer(tf.keras.layers.Layer):
 #==================================================
 def main():
     X, y = data_processing.read_data('maps_conmat.mat', 'maps_age.mat')
-    #X = data_processing.adjacency_matrix(X)
     Xm = X.mean(axis = 0)
 
     EMBEDDING_DIM = 8
-    ACTIVATION = 'linear'
+    ACTIVATION = 'tanh'
     HEADS = 16
 
     #Fully-Connected AutoEncoder
-    '''
     e_x = tf.keras.layers.Input((None, X.shape[-1]))
     e_o = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(EMBEDDING_DIM, activation=ACTIVATION))(e_x)
     e = tf.keras.Model(e_x, e_o)
@@ -162,24 +160,20 @@ def main():
 
     model = AutoEncoder(e, d)
     model.train(X, epochs = 50, learning_rate = 0.001, loss = 'mse')
-    generate_embedding_vis(Xm, model.encode(Xm))
-    '''
+    generate_embedding_vis(Xm, model.encode(Xm), embedding_name='Neural Autoencoder')
+
     #Transformer AutoEncoder
-    #print('ENCODER')
     et_x = tf.keras.layers.Input((X.shape[1], X.shape[2]))
     et_o = Transformer(EMBEDDING_DIM, heads=HEADS, activation=ACTIVATION)(et_x)
-    #et_o = Transformer(EMBEDDING_DIM, heads=HEADS, activation=ACTIVATION)(et_o)
     et = tf.keras.Model(et_x, et_o)
-    #print()
-    #print('DECODER')
+
     dt_x = tf.keras.layers.Input((X.shape[1], EMBEDDING_DIM))
     dt_o = Transformer(X.shape[2], heads=HEADS, activation='linear')(dt_x)
-    #dt_o = Transformer(X.shape[2], heads=HEADS, activation='linear')(dt_o)
     dt = tf.keras.Model(dt_x, dt_o)
-    #print()
+
     modelt = AutoEncoder(et, dt)
     modelt.train(X, epochs = 100, learning_rate = 0.001, loss = 'mse')
-    generate_embedding_vis(Xm, modelt.encode(Xm))
+    generate_embedding_vis(Xm, modelt.encode(Xm), embedding_name='Neural Transformer')
 
 if __name__ == '__main__':
     main()
