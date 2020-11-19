@@ -24,8 +24,7 @@ class AutoEncoder:
     def encode(self, data):
         if len(data.shape) == 2:
             data = data[np.newaxis, ...]
-            return self.encoder.predict(data)[0]
-        return self.encoder.predict(data)
+        return np.squeeze(self.encoder.predict(data))
 
     def decode(self, data):
         return self.decoder.predict(data)

@@ -1,6 +1,7 @@
 import numpy as np
 import sys, os
 import argparse
+import tensorly as tl
 sys.path.insert(0, '.')
 
 import data_processing
@@ -30,15 +31,58 @@ class MatrixFactorization:
             self.factor -= learning_rate * self.MSEgrad()
             print(f'Epoch {i}: loss - {self.MSE()}')
 
+    def encode(self, data):
+        if len(data.shape) == 2:
+            data = data[np.newaxis, ...]
+        input_a = tl.tenalg.khatri_rao([self.factor, self.factor])
+        target_a = tl.unfold(data, mode=0).T
+        return np.squeeze(np.linalg.solve(input_a.T.dot(input_a), input_a.T.dot(target_a)).T)
+
+class TensorFactorization:
+    def __init__(self, data, embedding_dim):
+        self.data = data
+        self.embedding_dim = embedding_dim
+        self.num_entries = len(self.data)
+        self.embedding_factor = np.random.uniform(size=(self.num_entries, self.embedding_dim))
+        self.matrix_factor = np.random.uniform(size=(self.data.shape[1], self.embedding_dim))
+
+    def fit(self, epochs):
+        for i in range(epochs):
+            # optimize embedding factor
+            input_a = tl.tenalg.khatri_rao([self.matrix_factor, self.matrix_factor])
+            target_a = tl.unfold(self.data, mode=0).T
+            self.embedding_factor = np.linalg.solve(input_a.T.dot(input_a), input_a.T.dot(target_a)).T
+
+            # optimize b
+            input_b = tl.tenalg.khatri_rao([self.embedding_factor, self.matrix_factor])
+            target_b = tl.unfold(self.data, mode=1).T
+            self.matrix_factor = np.linalg.solve(input_b.T.dot(input_b), input_b.T.dot(target_b)).T
+
+            res_a = np.square(input_a.dot(self.embedding_factor.T) - target_a).mean()
+            res_b = np.square(input_b.dot(self.matrix_factor.T) - target_b).mean()
+            print(f"Epoch {i}: embedding loss - {res_a}    matrix loss - {res_b}")
+
+    def encode(self, data):
+        if len(data.shape) == 2:
+            data = data[np.newaxis, ...]
+        input_a = tl.tenalg.khatri_rao([self.matrix_factor, self.matrix_factor])
+        target_a = tl.unfold(data, mode=0).T
+        return np.squeeze(np.linalg.solve(input_a.T.dot(input_a), input_a.T.dot(target_a)).T)
+
 
 def main():
     X, y = data_processing.read_data('maps_conmat.mat', 'maps_age.mat')
     Xm = X.mean(axis = 0)
 
-    factorization = MatrixFactorization(Xm, 2)
-    factorization.fit(200, 0.00001)
+    factorization = MatrixFactorization(Xm, 3)
+    factorization.fit(200, 0.0001)
 
     generate_embedding_vis(Xm, factorization.factor, embedding_name="Matrix Factorization")
+
+    factorization = TensorFactorization(X, 3)
+    factorization.fit(50)
+
+    generate_embedding_vis(Xm, factorization.matrix_factor, embedding_name="Tensor Factorization")
 
 if __name__ == '__main__':
     main()
