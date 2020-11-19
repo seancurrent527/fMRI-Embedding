@@ -47,13 +47,14 @@ class TensorFactorization:
         self.matrix_factor = np.random.uniform(size=(self.data.shape[1], self.embedding_dim))
 
     def fit(self, epochs):
+        #adapted from https://medium.com/@mohammadbashiri93/tensor-decomposition-in-python-f1aa2f9adbf4
         for i in range(epochs):
             # optimize embedding factor
             input_a = tl.tenalg.khatri_rao([self.matrix_factor, self.matrix_factor])
             target_a = tl.unfold(self.data, mode=0).T
             self.embedding_factor = np.linalg.solve(input_a.T.dot(input_a), input_a.T.dot(target_a)).T
 
-            # optimize b
+            # optimize matrix factor
             input_b = tl.tenalg.khatri_rao([self.embedding_factor, self.matrix_factor])
             target_b = tl.unfold(self.data, mode=1).T
             self.matrix_factor = np.linalg.solve(input_b.T.dot(input_b), input_b.T.dot(target_b)).T
