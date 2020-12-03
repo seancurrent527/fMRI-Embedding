@@ -7,6 +7,8 @@ import data_processing
 from embeddings.random_walk import random_walk
 from utils.plot_embeddings import generate_embedding_vis
 
+#this code was implemented by Sean and Matt
+
 class Word2Vec:
     def __init__(self, vocab_size, embedding_dim, kernel_width, learning_rate):
         self.vocab_size = vocab_size

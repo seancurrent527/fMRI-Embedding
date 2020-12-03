@@ -7,7 +7,10 @@ sys.path.insert(0, '.')
 import data_processing
 from utils.plot_embeddings import generate_embedding_vis
 
+#This code was implemented by Sean
+
 class MatrixFactorization:
+    #This method is good for symmetric matrices, but NOT TENSORS. Would not use in this domain.
     def __init__(self, data, embedding_dim):
         self.data = data
         self.embedding_dim = embedding_dim
@@ -44,6 +47,7 @@ class TensorFactorization:
         self.embedding_dim = embedding_dim
         self.num_entries = len(self.data)
         self.embedding_factor = np.random.uniform(size=(self.num_entries, self.embedding_dim))
+        #since connectivity matrices are symmetric, we only need one matrix factor
         self.matrix_factor = np.random.uniform(size=(self.data.shape[1], self.embedding_dim))
 
     def fit(self, epochs):

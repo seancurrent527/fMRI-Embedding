@@ -4,6 +4,8 @@ sys.path.insert(0, '.')
 
 import data_processing
 
+#this code was written by Sean
+
 def sample(adjacency, i):
     weights = adjacency[i].copy()
     weights = np.exp(weights) / np.exp(weights).sum() # softmax

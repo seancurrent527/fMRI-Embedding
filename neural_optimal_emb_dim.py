@@ -1,6 +1,6 @@
 import numpy as np
 import data_processing
-from embeddings.word2vec import Skip_Gram, CBOW
+from embeddings.neural_encoder import AutoEncoder
 from embeddings.random_walk import random_walk
 from sklearn.linear_model import Ridge
 from sklearn.svm import SVR
@@ -8,50 +8,49 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
-#this code was written by Matt
+#This code was written by Matt and adapted by Sean
 
 def main():
     # dimensions to test
-    DIMENSIONS = [64, 32, 16, 8, 4, 2]
+    DIMENSIONS = [64, 32, 16, 8, 4, 2, 1]
 
     X, y = data_processing.read_data('Data/maps_conmat.mat', 'Data/maps_age.mat')
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=.8)
 
-    # average matrix over train data
-    avg_matrix = X_train.mean(axis=0)
-
-    # generate random walks
-    walk = random_walk(avg_matrix, steps=1000)
-    seq = np.zeros((len(walk), 268))
-    for i, pos in enumerate(walk):
-        seq[i, :] = avg_matrix[pos]
-    print(seq.shape)
-
     # train embeddings for each dimension
-    skipgrams = list()
+    encoders = list()
     for dimension in DIMENSIONS:
 
         print(str(dimension) + "-D Embedding Training")
-        #skipgram = Skip_Gram(268, dimension, 2, 0.1)
-        skipgram = CBOW(268, dimension, 2, 0.1)
-        skipgram.train_from_feature_seq(seq, epochs=300)
+        
+        e_x = tf.keras.layers.Input((None, 268))
+        e_o = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(dimension, activation='tanh'))(e_x)
+        e = tf.keras.Model(e_x, e_o)
 
-        skipgrams.append((skipgram, dimension))
+        d_x = tf.keras.layers.Input((None, dimension))
+        d_o = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(268, activation='linear'))(d_x)
+        d = tf.keras.Model(d_x, d_o)
+
+        model = AutoEncoder(e, d)
+        model.train(X_train, epochs = 100, learning_rate = 0.001, loss = 'mse')
+
+        encoders.append((model, dimension))
 
     # encode train and test data using embeddings, then flatten for prediction
     embedded_train_list = list()
     embedded_test_list = list()
-    for skipgram in skipgrams:
-        embedded_train_matrix = np.zeros((len(X_train), 268 * skipgram[1]))
+    for model, dim in encoders:
+        embedded_train_matrix = np.zeros((len(X_train), 268 * dim))
         for i in range(len(X_train)):
-            embedding_train = skipgram[0].encode(X_train[i])
+            embedding_train = model.encode(X_train[i])
             embedded_train_matrix[i] = np.ndarray.flatten(embedding_train)
         embedded_train_list.append(embedded_train_matrix)
-        embedded_test_matrix = np.zeros((len(X_test), 268 * skipgram[1]))
+        embedded_test_matrix = np.zeros((len(X_test), 268 * dim))
         for i in range(len(X_test)):
-            embedding_test = skipgram[0].encode(X_test[i])
+            embedding_test = model.encode(X_test[i])
             embedded_test_matrix[i] = np.ndarray.flatten(embedding_test)
         embedded_test_list.append(embedded_test_matrix)
 
@@ -59,11 +58,22 @@ def main():
     lr_error_list = list()
     svr_error_list = list()
     mlp_error_list = list()
+    lr_error_list_train = list()
+    svr_error_list_train = list()
+    mlp_error_list_train = list()
     for i in range(len(embedded_train_list)):
-        lr = Ridge().fit(embedded_train_list[i], y_train)
+        lr = Ridge(alpha=2).fit(embedded_train_list[i], y_train)
         svr = SVR().fit(embedded_train_list[i], np.reshape(y_train, -1))
-        mlp = MLPRegressor(hidden_layer_sizes=(100,)).fit(embedded_train_list[i], np.reshape(y_train, -1))
-        print(mlp.loss_)
+        mlp = MLPRegressor(hidden_layer_sizes=(64, 32, 16, 8), learning_rate_init=0.001, max_iter=1000).fit(embedded_train_list[i], np.reshape(y_train, -1))
+        predictedLR = lr.predict(embedded_train_list[i])
+        predictedSV = svr.predict(embedded_train_list[i])
+        predictedMLP = mlp.predict(embedded_train_list[i])
+        lr_error = mean_squared_error(predictedLR, y_train)
+        svr_error = mean_squared_error(predictedSV, y_train)
+        mlp_error = mean_squared_error(predictedMLP, y_train)
+        lr_error_list_train.append(lr_error)
+        svr_error_list_train.append(svr_error)
+        mlp_error_list_train.append(mlp_error)
         predictedLR = lr.predict(embedded_test_list[i])
         predictedSV = svr.predict(embedded_test_list[i])
         predictedMLP = mlp.predict(embedded_test_list[i])
@@ -77,14 +87,27 @@ def main():
 
     # plot MSE for different embedding dims and prediction methods
     width = 0.35
+    plt.bar(np.arange(len(lr_error_list_train)), lr_error_list_train, width, label="LinReg")
+    plt.bar(np.arange(len(svr_error_list_train)) + width, svr_error_list_train, width, label="SVR")
+    plt.bar(np.arange(len(mlp_error_list_train)) + 2 * width, mlp_error_list_train, width, label="MLP")
+    plt.ylabel("MSE")
+    plt.xlabel("Dimensions")
+    plt.title("Autoencoder Mean Squared Error by Embedding Dimension - Train")
+    plt.xticks(np.arange(len(svr_error_list)) + width, list(DIMENSIONS))
+    plt.legend(loc="best")
+    plt.savefig('images/autoencoder_train')
+    plt.show()
+
+    width = 0.35
     plt.bar(np.arange(len(lr_error_list)), lr_error_list, width, label="LinReg")
     plt.bar(np.arange(len(svr_error_list)) + width, svr_error_list, width, label="SVR")
     plt.bar(np.arange(len(mlp_error_list)) + 2 * width, mlp_error_list, width, label="MLP")
     plt.ylabel("MSE")
     plt.xlabel("Dimensions")
-    plt.title("SkipGram Mean Squared Error by Embedding Dimension")
+    plt.title("Autoencoder Mean Squared Error by Embedding Dimension - test")
     plt.xticks(np.arange(len(svr_error_list)) + width, list(DIMENSIONS))
     plt.legend(loc="best")
+    plt.savefig('images/autoencoder_test')
     plt.show()
 
 

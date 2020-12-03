@@ -7,17 +7,21 @@ sys.path.insert(0, '.')
 import data_processing
 from utils.plot_embeddings import generate_embedding_vis
 
+#this code was implemented by Sean
+
 class AutoEncoder:
     def __init__(self, encoder, decoder):
         self.encoder = encoder
         self.decoder = decoder
 
     def train(self, X, epochs = 50, learning_rate = 0.01, loss = 'mse'):
+        #construct the joint encoder/decoder model
         model_in = tf.keras.layers.Input(X.shape[1:])
         model_encoded = self.encoder(model_in)
         model_out = self.decoder(model_encoded)
         model = tf.keras.Model(model_in, model_out)
 
+        #fit the joint model
         model.compile(loss = loss, optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate))
         model.fit(X, X, epochs = epochs, batch_size = 32)
 
@@ -59,10 +63,12 @@ class Transformer(tf.keras.layers.Layer):
         self.bias_constraint = tf.keras.constraints.get(bias_constraint)
 
     def build(self, input_shape):
-        # (batch, timesteps, features)
+        #input_shape = (batch, nodes, features)
         assert len(input_shape) == 3
         self.seq_length = input_shape[1]
         self.input_size = input_shape[2]
+
+        #initialize all necessary weights and kernels
         self.query_kernel = self.add_weight(name = 'query_kernel',
                                             shape = (self.heads, input_shape[-1], self.units),
                                             initializer = self.kernel_initializer,
@@ -115,25 +121,21 @@ class Transformer(tf.keras.layers.Layer):
         super(Transformer, self).build(input_shape)
 
     def call(self, inputs):
+        #expand inputs along head axis
         inputs = tf.repeat(tf.expand_dims(inputs, axis = 1), self.heads, axis = 1)
-        #print('INPUTS:', inputs.shape)
+        #distribute will add the bias as necessary
         distribute = lambda x: tf.repeat(tf.expand_dims(x, axis = 1), self.seq_length, axis = 1)
+        #compute queries, keys, and values
         queries = tf.matmul(inputs, self.query_kernel) + (distribute(self.query_bias) if self.use_bias else 0)
-        #print('QUERIES:', queries.shape)
         keys = tf.matmul(inputs, self.key_kernel) + (distribute(self.key_bias) if self.use_bias else 0)
-        #print('KEYS:', keys.shape)
         values = tf.matmul(inputs, self.value_kernel) + (distribute(self.value_bias) if self.use_bias else 0)
-        #print('VALUES:', values.shape)
+        #perform attention
         sims = tf.matmul(queries, tf.transpose(keys, (0, 1, 3, 2))) / np.sqrt(self.units)
-        #print('SIMS:', sims.shape)
         attentions = tf.nn.softmax(sims, axis = -1)
-        #print('ATTENTIONS:', attentions.shape)
         weighted_sims = tf.matmul(attentions, values)
-        #print('WEIGHTED SIMS:', weighted_sims.shape)
+        #combine heads and calculate output
         flattened_sims = tf.reshape(tf.transpose(weighted_sims, (0, 2, 1, 3)), [-1, self.seq_length, self.heads * self.units])
-        #print('FLATTENED SIMS:', flattened_sims.shape)
         outputs = tf.matmul(flattened_sims, self.head_kernel) + (self.head_bias if self.use_bias else 0)
-        #print('OUTPUTS:', outputs.shape)
         return self.activation(outputs)
 
     def compute_output_shape(self, input_shape):

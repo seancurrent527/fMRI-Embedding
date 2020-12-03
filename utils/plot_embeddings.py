@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys, os
 
+#this code was implemented by Sean
+
 def euclidean_distance(v1, v2):
     return ((v1 - v2) ** 2).sum()**0.5
 

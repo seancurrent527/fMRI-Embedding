@@ -1,6 +1,8 @@
 from scipy.io import loadmat
 import numpy as np
 
+#this code was written by Sean
+
 def read_data(Xfile, yfile, target_variable = 'age'):
     X = loadmat(Xfile)['full_conmat'].transpose((2, 0, 1))
     y = loadmat(yfile)[target_variable]
