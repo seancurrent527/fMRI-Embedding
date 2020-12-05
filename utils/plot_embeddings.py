@@ -17,6 +17,8 @@ def calculate_distance_matrix(data, distance_function = euclidean_distance):
     return distances
 
 def generate_embedding_vis(og_data, embedding_data, embedding_name = ''):
+    og_data = og_data.reshape((len(og_data), -1))
+    embedding_data = embedding_data.reshape((len(embedding_data), -1))
     og_distances = calculate_distance_matrix(og_data)
     embedding_distances = calculate_distance_matrix(embedding_data)
     fig, axes = plt.subplots(1, 2)

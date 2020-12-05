@@ -161,7 +161,8 @@ def main():
 
     model = AutoEncoder(e, d)
     model.train(X, epochs = 50, learning_rate = 0.001, loss = 'mse')
-    generate_embedding_vis(Xm, model.encode(Xm), embedding_name='Neural Autoencoder')
+    #generate_embedding_vis(Xm, model.encode(Xm), embedding_name='Neural Autoencoder')
+    generate_embedding_vis(X, model.encode(X), embedding_name='Neural Autoencoder')
 
     #Transformer AutoEncoder
     et_x = tf.keras.layers.Input((X.shape[1], X.shape[2]))
@@ -174,7 +175,8 @@ def main():
 
     modelt = AutoEncoder(et, dt)
     modelt.train(X, epochs = 100, learning_rate = 0.001, loss = 'mse')
-    generate_embedding_vis(Xm, modelt.encode(Xm), embedding_name='Neural Transformer')
+    #generate_embedding_vis(Xm, modelt.encode(Xm), embedding_name='Neural Transformer')
+    generate_embedding_vis(X, modelt.encode(X), embedding_name='Neural Transformer')
 
 if __name__ == '__main__':
     main()

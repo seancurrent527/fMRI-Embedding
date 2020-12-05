@@ -161,12 +161,14 @@ def main():
     #Skip-Gram
     model = Skip_Gram(268, 64, 2, 0.1)
     model.train_from_feature_seq(one_hot, epochs = 200)
-    generate_embedding_vis(Xm, model.encode(Xm), embedding_name="Skip-Gram")
+    #generate_embedding_vis(Xm, model.encode(Xm), embedding_name="Skip-Gram")
+    generate_embedding_vis(X, model.encode(X), embedding_name="Skip-Gram")
 
     #CBOW
     model = CBOW(268, 64, 2, 0.1)
     model.train_from_feature_seq(one_hot, epochs = 200)
-    generate_embedding_vis(Xm, model.encode(Xm), embedding_name="CBOW")
+    #generate_embedding_vis(Xm, model.encode(Xm), embedding_name="CBOW")
+    generate_embedding_vis(X, model.encode(X), embedding_name="CBOW")
 
 if __name__ == '__main__':
     main()

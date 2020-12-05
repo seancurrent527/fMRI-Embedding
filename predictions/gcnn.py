@@ -6,6 +6,8 @@ sys.path.insert(0, '.')
 
 import data_processing
 
+#this code was implemented by Sean.
+
 np.random.seed(5523)
 
 class GraphCNN(tf.keras.layers.Layer):
@@ -89,9 +91,9 @@ def graph_nn(num_features):
     n_in = tf.keras.layers.Input((268, num_features))
     e_in = tf.keras.layers.Input((1, 268, 268))
 
-    c_1 = GraphCNN(8, activation = 'relu', kernel_regularizer=tf.keras.regularizers.l2(0.0001))([n_in, e_in])
+    c_1 = GraphCNN(16, activation = 'relu', kernel_regularizer=tf.keras.regularizers.l2(0.01))([n_in, e_in])
     c_1 = tf.keras.layers.Dropout(0.2)(c_1)
-    c_2 = GraphCNN(1, activation = 'relu', kernel_regularizer=tf.keras.regularizers.l2(0.0001))([c_1, e_in])
+    c_2 = GraphCNN(4, activation = 'relu', kernel_regularizer=tf.keras.regularizers.l2(0.01))([c_1, e_in])
     c_2 = tf.keras.layers.Dropout(0.2)(c_2)
 
     h_1 = tf.keras.layers.Flatten()(c_2)
@@ -102,30 +104,40 @@ def graph_nn(num_features):
 
 #=============================================
 def main():
-    X, y = data_processing.read_data('maps_conmat.mat', 'maps_age.mat')
+    X, y = data_processing.read_data('Data/conmat_240.mat', 'Data/task_240.mat', target_variable='mean_rxn')
+    #X, y = data_processing.read_data('Data/conmat_240.mat', 'Data/age_240.mat', target_variable='age')
+    #task = mean_rxn, age = age for tagert variable
+
+    indices = ~np.isnan(X).any(axis=(1,2))
+    X, y = X[indices], y[indices]
 
     permutation = np.random.permutation(len(X))
     X, y = X[permutation], y[permutation]
 
+    #y = (y - y.min()) / (y.max() - y.min())
+    y = (y - y.mean()) / y.std()
+
     node_features = np.eye(268)[np.newaxis, ...]
     node_features = np.repeat(node_features, len(X), axis = 0)
 
-    edge_features = X[:, np.newaxis, ...]
+    edge_features = X + node_features
+    edge_features = edge_features[:, np.newaxis, ...]
 
     model = graph_nn(268)
 
     X_train, y_train = [node_features[:200], edge_features[:200]], y[:200]
     X_test, y_test = [node_features[200:], edge_features[200:]], y[200:]
 
-    model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001))
-    model.fit(X_train, y_train, epochs = 3000, batch_size = 32)
+    model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5))
+    model.fit(X_train, y_train, validation_data = (X_test, y_test), epochs = 4000, batch_size = 16)
 
     predictions = model.predict(X_test)
-
+ 
     print(predictions)
     print(y_test)
 
     print('MSE:', ((predictions - y_test) ** 2).mean())
+    print('Corr:', np.corrcoef(predictions[:, 0], y_test[:, 0])[0, 1])
 
 if __name__ == '__main__':
     main()

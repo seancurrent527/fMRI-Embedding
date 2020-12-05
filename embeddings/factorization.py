@@ -79,15 +79,17 @@ def main():
     X, y = data_processing.read_data('maps_conmat.mat', 'maps_age.mat')
     Xm = X.mean(axis = 0)
 
-    factorization = MatrixFactorization(Xm, 3)
+    factorization = MatrixFactorization(Xm, 8)
     factorization.fit(200, 0.0001)
 
-    generate_embedding_vis(Xm, factorization.factor, embedding_name="Matrix Factorization")
+    #generate_embedding_vis(Xm, factorization.factor, embedding_name="Matrix Factorization")
+    generate_embedding_vis(X, factorization.encode(X), embedding_name="Matrix Factorization")
 
-    factorization = TensorFactorization(X, 3)
+    factorization = TensorFactorization(X, 8)
     factorization.fit(50)
 
-    generate_embedding_vis(Xm, factorization.matrix_factor, embedding_name="Tensor Factorization")
+    #generate_embedding_vis(Xm, factorization.matrix_factor, embedding_name="Tensor Factorization")
+    generate_embedding_vis(X, factorization.encode(X), embedding_name='Tensor Factorization')
 
 if __name__ == '__main__':
     main()

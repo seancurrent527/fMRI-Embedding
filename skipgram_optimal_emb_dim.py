@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 
+from scipy.io import savemat
+
 #this code was written by Matt
 
 def main():
@@ -34,7 +36,6 @@ def main():
     for dimension in DIMENSIONS:
 
         print(str(dimension) + "-D Embedding Training")
-        #skipgram = Skip_Gram(268, dimension, 2, 0.1)
         skipgram = CBOW(268, dimension, 2, 0.1)
         skipgram.train_from_feature_seq(seq, epochs=300)
 
@@ -60,6 +61,7 @@ def main():
     svr_error_list = list()
     mlp_error_list = list()
     for i in range(len(embedded_train_list)):
+        savemat(f'Data/cbow_{DIMENSIONS[i]}.mat', {'train':embedded_train_list[i] ,'test':embedded_test_list[i]})
         lr = Ridge().fit(embedded_train_list[i], y_train)
         svr = SVR().fit(embedded_train_list[i], np.reshape(y_train, -1))
         mlp = MLPRegressor(hidden_layer_sizes=(100,)).fit(embedded_train_list[i], np.reshape(y_train, -1))
