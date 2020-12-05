@@ -115,17 +115,17 @@ def main():
 
     embeddings = {}
     
-    if args.autoencoder:
+    if args.autoencoder or args.all:
         embeddings['autoencoder'] = autoencoder(train, evaluate, args.embedding_dim, args.activation, args.epochs, args.learning_rate)
-    if args.transformer:
+    if args.transformer or args.all:
         embeddings['transformer'] = transformer(train, evaluate, args.embedding_dim, args.heads, args.activation, args.epochs, args.learning_rate)
-    if args.skipgram:
+    if args.skipgram or args.all:
         embeddings['skipgram'] = skipgram(train, evaluate, args.embedding_dim, args.sentence_length, args.window, args.epochs, args.learning_rate)
-    if args.cbow:
+    if args.cbow or args.all:
         embeddings['cbow'] = cbow(train, evaluate, args.embedding_dim, args.sentence_length, args.window, args.epochs, args.learning_rate)
-    if args.matrix_factor:
+    if args.matrix_factor or args.all:
         embeddings['matrix_factor'] = matrix_factor(train, evaluate, args.embedding_dim, args.epochs, args.learning_rate)
-    if args.tensor_factor:
+    if args.tensor_factor or args.all:
         embeddings['tensor_factor'] = tensor_factor(train, evaluate, args.embedding_dim, args.epochs)
 
     savemat(args.output, embeddings)
