@@ -61,7 +61,7 @@ def main():
     svr_error_list = list()
     mlp_error_list = list()
     for i in range(len(embedded_train_list)):
-        savemat(f'Data/cbow_{DIMENSIONS[i]}.mat', {'train':embedded_train_list[i] ,'test':embedded_test_list[i]})
+        #savemat(f'Data/cbow_{DIMENSIONS[i]}.mat', {'train':embedded_train_list[i] ,'test':embedded_test_list[i]})
         lr = Ridge().fit(embedded_train_list[i], y_train)
         svr = SVR().fit(embedded_train_list[i], np.reshape(y_train, -1))
         mlp = MLPRegressor(hidden_layer_sizes=(100,)).fit(embedded_train_list[i], np.reshape(y_train, -1))
