@@ -17,7 +17,7 @@ def main():
     # dimensions to test
     DIMENSIONS = [64, 32, 16, 8, 4, 2]
 
-    X, y = data_processing.read_data('Data/maps_conmat.mat', 'Data/maps_age.mat')
+    X, y = data_processing.read_data('Data/conmat_240.mat', 'Data/age_240.mat')
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=.8)
 

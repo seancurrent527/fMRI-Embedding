@@ -150,7 +150,7 @@ class CBOW(Word2Vec):
 
 #=============================================
 def main():
-    X, y = data_processing.read_data('maps_conmat.mat', 'maps_age.mat')
+    X, y = data_processing.read_data('Data/conmat_240.mat', 'Data/age_240.mat')
     Xm = X.mean(axis=0)
 
     walk = random_walk(Xm, steps = 1000)

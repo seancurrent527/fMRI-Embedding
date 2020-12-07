@@ -12,11 +12,13 @@ from embeddings.neural_encoder import AutoEncoder, Transformer
 from embeddings.factorization import MatrixFactorization, TensorFactorization
 from embeddings.word2vec import Skip_Gram, CBOW
 
+# this code was written by Sean
+
 def main():
     X, y = data_processing.read_data('Data/conmat_240.mat', 'Data/age_240.mat')
     Xm = X.mean(axis = 0)
 
-    EMBEDDING_DIM = 8
+    EMBEDDING_DIM = 16
 
     #Fully-Connected AutoEncoder
     e_x = tf.keras.layers.Input((None, X.shape[-1]))

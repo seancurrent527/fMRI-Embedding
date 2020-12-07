@@ -20,7 +20,7 @@ def adjacency_matrix(X):
 
 #============================================
 def main():
-    X, y = read_data('maps_conmat.mat', 'maps_age.mat')
+    X, y = read_data('Data/conmat_240.mat', 'Data/age_240.mat')
     #X = adjacency_matrix(X)
 
     print(X)

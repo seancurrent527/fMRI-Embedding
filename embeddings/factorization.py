@@ -10,7 +10,7 @@ from utils.plot_embeddings import generate_embedding_vis
 #This code was implemented by Sean
 
 class MatrixFactorization:
-    #This method is good for symmetric matrices, but NOT TENSORS. Would not use in this domain.
+    #This method is good for symmetric matrices
     def __init__(self, data, embedding_dim):
         self.data = data
         self.embedding_dim = embedding_dim
@@ -76,7 +76,7 @@ class TensorFactorization:
 
 
 def main():
-    X, y = data_processing.read_data('maps_conmat.mat', 'maps_age.mat')
+    X, y = data_processing.read_data('Data/conmat_240.mat', 'Data/age_240.mat')
     Xm = X.mean(axis = 0)
 
     factorization = MatrixFactorization(Xm, 8)
