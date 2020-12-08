@@ -86,3 +86,5 @@ To run standard predictive model using using matrix factorization embedding to p
 To run standard predictive model using using tensor factorization embedding to predict age:
 
 - **python Embedding_CPM.py -embed tensor -target task**
+
+There are additional predictive codes written in matlab. These are stored in the *matlab/* directory, and have their own readme *matlab/readme.txt*.
