@@ -1,4 +1,4 @@
-# fMRI-Embedding
+# fMRI-Embeddings
 
 This project is organized on a module level. All embedding code is organized in the embeddings folder, which are accessed within code scripts using
 
@@ -33,3 +33,56 @@ Multiple embedding flags can be used at a time, and there is an additional **--a
 - The **tensor-factor** must specify the embedding size **-d** and the number of training epochs **-e**.
 
 Additionally, all methods must specify a training set **-t**, an evaluation set **-x**, and an output file **-o**, all of which are in the .mat format. Data in the training and evaluation set should be under the *full_conmat* key and are expected to have data shapes (nodes, nodes, samples).
+
+# Predictions Using fMRI Embeddings
+
+This code runs the integration of the various graph embedding techniques within a standard fMRI predictive modeling technique and examines the influence of motion artifact. This code is written in Python 3.
+
+example of how to run in terminal: **python Embedding_CPM.py -embed none -target age**  
+embed options: **none, CBOW, skip, matrix, tensor**  
+target options: **age, task**
+
+## PREDICTING AGE
+
+To run standard predictive model using using no embedding techniques to predict age:
+
+- **python Embedding_CPM.py -embed none -target age**
+
+To run standard predictive model using using CBOW embedding to predict age:
+
+- **python Embedding_CPM.py -embed CBOW -target age**
+
+To run standard predictive model using using Skip-gram embedding to predict age:
+
+- **python Embedding_CPM.py -embed skip -target age**
+
+To run standard predictive model using using matrix factorization embedding to predict age:
+
+- **python Embedding_CPM.py -embed matrix -target age**
+
+To run standard predictive model using using tensor factorization embedding to predict age:
+
+- **python Embedding_CPM.py -embed tensor -target age**
+
+
+## PREDICTING TASK PERFORMANCE
+
+To run standard predictive model using using no embedding techniques to predict age:
+
+- **python Embedding_CPM.py -embed none -target task**
+
+To run standard predictive model using using CBOW embedding to predict age:
+
+- **python Embedding_CPM.py -embed CBOW -target task**
+
+To run standard predictive model using using Skip-gram embedding to predict age:
+
+- **python Embedding_CPM.py -embed skip -target task**
+
+To run standard predictive model using using matrix factorization embedding to predict age:
+
+- **python Embedding_CPM.py -embed matrix -target task**
+
+To run standard predictive model using using tensor factorization embedding to predict age:
+
+- **python Embedding_CPM.py -embed tensor -target task**
